@@ -56,41 +56,63 @@ class Classmark
      */
     public static function parse($classmark)
     {
+
         // Validate the classmark.
         if (!is_string($classmark) || !preg_match('/^([a-z\ ]*[A-Z]{1,2}[A-Za-z0-9\.\ ]*)$/', $classmark)) {
             throw new \InvalidArgumentException('Invalid classmark provided for parse.');
         }
 
         // Setup our variables.
-        $author = '';
-        $prefix = '';
         $subject = '';
-        $subdivision = '';
-        $classmark = trim($classmark);
-
-        // Strip any lower-case characters from the start of the string.
-        if (preg_match('/^([a-z]*)/', $classmark, $matches)) {
-            $prefix = $matches[1];
-            $classmark = trim(substr($classmark, strlen($prefix)));
+        $sub_subject = '';
+    
+        // Check the first character and if it is a lowercase 'f' or 'q' then remove it
+        if (strlen($classmark) > 1 && preg_match('/(^f|^q)/', $classmark)) {
+            $classmark = substr($classmark, 1);
         }
-
-        // Strip any 3 lower case characters from the end of the string
-        // if separated by a space.
-        if (preg_match('/\ ([a-z]{3})$/', $classmark, $matches)) {
-            $author = $matches[1];
-            $classmark = trim(substr($classmark, 0, strpos($classmark, $author)));
+    
+        // Uppercase our $classmark string
+        $classmark = strtoupper($classmark);
+    
+        // Check first 2 characters and if they are 'FF' or 'QQ' then remove the first character
+        // This relates to when there is a 'f' (for folio) or 'q' (for quarto) at the start of the classmark. We will never have a classmark that has 2 'f's or 2 'q's at the start.
+        if (preg_match('/^FF/', $classmark) || preg_match('/^QQ/', $classmark)) {
+            $classmark = substr($classmark, 1);
         }
-
-        // Strip off the first set of uppercase alpha characters.
-        if (preg_match('/(^[A-Z]{1,4})/', $classmark, $matches)) {
-            $subject = $matches[1];
-            $classmark = trim(substr($classmark, strlen($subject)));
+        
+        // Check if the string has 1 or 2 alpha characters at the start and then store as $subject
+        if (preg_match('/^[A-Z][A-Z]/', $classmark)) {
+            $subject = substr($classmark, 0, 2);
+        } else {
+            $subject = substr($classmark, 0, 1);
         }
+    
+        // Trim these characters from the $classmark string and store as $sub_subject
+        $sub_subject = trim(substr($classmark, strlen($subject)));
+    
+        // If first character is a decimal or space remove it
+        if (preg_match('/(^\.|^\s)/', $sub_subject)) {
+            $sub_subject = trim(substr($sub_subject, 1));
+        }
+    
+        // Find index of first space
+        preg_match('/\s/', $sub_subject, $matches, PREG_OFFSET_CAPTURE);
+        if (!empty($matches)) {
+            // Remove all characters from that index to the end of the string
+            $index = $matches[0][1];
+            $sub_subject = substr($sub_subject, 0, $index);
+        }
+    
+        // Check last character for a decimal or space
+        preg_match('/(\.|\s)$/', $sub_subject, $matches, PREG_OFFSET_CAPTURE);
+        if (!empty($matches)) {
+            $index = $matches[0][1];
+            // If it is a space or a decimal, remove it
+            $sub_subject = substr($sub_subject, 0, $index);
+        }
+    
+        return new static($subject . ' ' . $sub_subject);
 
-        // Subdivision is whatever is left.
-        $subdivision = $classmark;
-
-        return new static($subject, $subdivision, $author, $prefix);
     }
 
     /**
