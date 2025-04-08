@@ -70,7 +70,7 @@ class Classmark
     
         // Does the classmark start with a number?
         if (is_numeric(substr($classmark, 0, 1))) {
-            throw new \InvalidArgumentException('Invalid classmark provided for parse - Value beings with a number (' . $classmark . ');');
+            throw new \InvalidArgumentException('Invalid classmark provided for parse - Value begins with a number (' . $classmark . ');');
         }
     
         // PREFIX
