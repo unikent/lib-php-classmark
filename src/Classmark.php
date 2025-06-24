@@ -75,37 +75,39 @@ class Classmark
     
         // PREFIX
         // ----------------------------------------------------------------------------------
+
+        // Commented out on 2023-10-30 as it may not be relevant going forward.
     
-        // If the string start with 'FOL', 'LRG', or 'PER'
-        if(substr($classmark, 0, 3) == 'FOL' || substr($classmark, 0, 3) == 'LRG' || substr($classmark, 0, 3) == 'PER') {
+        // // If the string start with 'FOL', 'LRG', or 'PER'
+        // if(substr($classmark, 0, 3) == 'FOL' || substr($classmark, 0, 3) == 'LRG' || substr($classmark, 0, 3) == 'PER') {
     
-            // If yes - Remove the prefix
-            $classmark = substr($classmark, 3); // Remove the prefix
+        //     // If yes - Remove the prefix
+        //     $classmark = substr($classmark, 3); // Remove the prefix
             
-            // Check if first character is a space
-            if(substr($classmark, 0, 1) == ' ') {
-                $classmark = substr($classmark, 1); // Remove the space
-            }
+        //     // Check if first character is a space
+        //     if(substr($classmark, 0, 1) == ' ') {
+        //         $classmark = substr($classmark, 1); // Remove the space
+        //     }
     
-        }
+        // }
     
-        // If there is single prefix letter ('F', 'L', 'P', or 'Q') followed by a space / decimal and another letter (If followed by a number then its is valid)
-        $prefixes = ['F', 'L', 'P', 'Q'];
-        if (in_array(substr($classmark, 0, 1), $prefixes) && in_array($classmark[1], [' ', '.'])) {
-            $classmark = substr($classmark, 2); // Remove the character and the space / decimal
-        }
+        // // If there is single prefix letter ('F', 'L', 'P', or 'Q') followed by a space / decimal and another letter (If followed by a number then its is valid)
+        // $prefixes = ['F', 'L', 'P', 'Q'];
+        // if (in_array(substr($classmark, 0, 1), $prefixes) && in_array($classmark[1], [' ', '.'])) {
+        //     $classmark = substr($classmark, 2); // Remove the character and the space / decimal
+        // }
     
-        // Check if the first two characters are either 'ff', 'll', 'pp', or 'qq'
-        if (preg_match('/^ff|^ll|^pp|^qq/i', $classmark)) {
-            // If yes - Remove the first character and continue
-            $classmark = substr($classmark, 1); // Remove the first character
-        }
+        // // Check if the first two characters are either 'ff', 'll', 'pp', or 'qq'
+        // if (preg_match('/^ff|^ll|^pp|^qq/i', $classmark)) {
+        //     // If yes - Remove the first character and continue
+        //     $classmark = substr($classmark, 1); // Remove the first character
+        // }
     
-        // How many letters are there at the start?
-        $number_index = 0; // Default value
-        if (preg_match('/\d/', $classmark, $matches, PREG_OFFSET_CAPTURE)) {
-            $number_index = $matches[0][1];
-        }
+        // // How many letters are there at the start?
+        // $number_index = 0; // Default value
+        // if (preg_match('/\d/', $classmark, $matches, PREG_OFFSET_CAPTURE)) {
+        //     $number_index = $matches[0][1];
+        // }
     
         // SUBJECTS
         // ----------------------------------------------------------------------------------
