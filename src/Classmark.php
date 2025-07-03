@@ -27,28 +27,12 @@ class Classmark
     private $subdivision;
 
     /**
-     * Classmark author.
-     *
-     * @var string
-     */
-    private $author;
-
-    /**
-     * Classmark prefix.
-     *
-     * @var string
-     */
-    private $prefix;
-
-    /**
      * Construct a new classmark object.
      */
-    public function __construct($subject, $subdivision = '', $author = '', $prefix = '')
+    public function __construct($subject, $subdivision = '')
     {
         $this->subject = $subject;
         $this->subdivision = $subdivision;
-        $this->author = $author;
-        $this->prefix = $prefix;
     }
 
     /**
@@ -64,7 +48,7 @@ class Classmark
     
         // Setup our variables.
         $subject = null;
-        $sub_subject = null;
+        $subdivision = null;
     
         $classmark = strtoupper($classmark); // Uppercase our $classmark string
     
@@ -73,47 +57,11 @@ class Classmark
             throw new \InvalidArgumentException('Invalid classmark provided for parse - Value begins with a number (' . $classmark . ');');
         }
     
-        // PREFIX
-        // ----------------------------------------------------------------------------------
-
-        // Commented out on 2023-10-30 as it may not be relevant going forward.
-    
-        // // If the string start with 'FOL', 'LRG', or 'PER'
-        // if(substr($classmark, 0, 3) == 'FOL' || substr($classmark, 0, 3) == 'LRG' || substr($classmark, 0, 3) == 'PER') {
-    
-        //     // If yes - Remove the prefix
-        //     $classmark = substr($classmark, 3); // Remove the prefix
-            
-        //     // Check if first character is a space
-        //     if(substr($classmark, 0, 1) == ' ') {
-        //         $classmark = substr($classmark, 1); // Remove the space
-        //     }
-    
-        // }
-    
-        // // If there is single prefix letter ('F', 'L', 'P', or 'Q') followed by a space / decimal and another letter (If followed by a number then its is valid)
-        // $prefixes = ['F', 'L', 'P', 'Q'];
-        // if (in_array(substr($classmark, 0, 1), $prefixes) && in_array($classmark[1], [' ', '.'])) {
-        //     $classmark = substr($classmark, 2); // Remove the character and the space / decimal
-        // }
-    
-        // // Check if the first two characters are either 'ff', 'll', 'pp', or 'qq'
-        // if (preg_match('/^ff|^ll|^pp|^qq/i', $classmark)) {
-        //     // If yes - Remove the first character and continue
-        //     $classmark = substr($classmark, 1); // Remove the first character
-        // }
-    
-        // // How many letters are there at the start?
-        // $number_index = 0; // Default value
-        // if (preg_match('/\d/', $classmark, $matches, PREG_OFFSET_CAPTURE)) {
-        //     $number_index = $matches[0][1];
-        // }
-    
         // SUBJECTS
         // ----------------------------------------------------------------------------------
     
         $subject = substr($classmark, 0, $number_index);    
-        $sub_subject = trim(substr($classmark, strlen($subject)));
+        $subdivision = trim(substr($classmark, strlen($subject)));
     
         // Find and remove any decimal or space on the subject value
         if (preg_match('/(\.|\s)/', $subject, $matches, PREG_OFFSET_CAPTURE)) {
@@ -126,44 +74,28 @@ class Classmark
             throw new \InvalidArgumentException('Invalid classmark provided for parse - First subject letter ' . $subject[0] . ' is invalid (' . $classmark . ');');
         }
     
-        // SUB-SUBJECTS
+        // SUBDIVISIONS
         // ----------------------------------------------------------------------------------
     
         // Search for first single space in the remaining string
-        preg_match('/\s/', $sub_subject, $matches, PREG_OFFSET_CAPTURE);
+        preg_match('/\s/', $subdivision, $matches, PREG_OFFSET_CAPTURE);
         if (!empty($matches)) {
             // Remove all characters from that index to the end of the string
             $index = $matches[0][1];
-            $sub_subject = substr($sub_subject, 0, $index);
+            $subdivision = substr($subdivision, 0, $index);
         }
     
         // Check if first character is a space or decimal
-        if (preg_match('/^(\.|\s)/', $sub_subject)) {
-            $sub_subject = substr($sub_subject, 1); // Remove the character
+        if (preg_match('/^(\.|\s)/', $subdivision)) {
+            $subdivision = substr($subdivision, 1); // Remove the character
         }
     
-        if (empty($subject) || empty($sub_subject)) {
+        if (empty($subject) || empty($subdivision)) {
             throw new \InvalidArgumentException('Invalid classmark provided for parse - Parsing returned an empty value for subject and/or sub-subject (' . $classmark . ');');
         }
         
-        return new static($subject . ' ' . $sub_subject);
+        return new static($subject, $subdivision);
 
-    }
-
-    /**
-     * Return the author.
-     */
-    public function get_author()
-    {
-        return $this->author;
-    }
-
-    /**
-     * Return the prefix.
-     */
-    public function get_prefix()
-    {
-        return $this->prefix;
     }
 
     /**
@@ -223,6 +155,6 @@ class Classmark
      */
     public function __toString()
     {
-        return trim("{$this->prefix}{$this->subject}{$this->subdivision}{$this->author}");
+        return trim("{$this->subject}{$this->subdivision}");
     }
 }
