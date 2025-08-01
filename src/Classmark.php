@@ -27,28 +27,12 @@ class Classmark
     private $subdivision;
 
     /**
-     * Classmark author.
-     *
-     * @var string
-     */
-    private $author;
-
-    /**
-     * Classmark prefix.
-     *
-     * @var string
-     */
-    private $prefix;
-
-    /**
      * Construct a new classmark object.
      */
-    public function __construct($subject, $subdivision = '', $author = '', $prefix = '')
+    public function __construct($subject, $subdivision = '')
     {
         $this->subject = $subject;
         $this->subdivision = $subdivision;
-        $this->author = $author;
-        $this->prefix = $prefix;
     }
 
     /**
@@ -56,57 +40,62 @@ class Classmark
      */
     public static function parse($classmark)
     {
-        // Validate the classmark.
-        if (!is_string($classmark) || !preg_match('/^([a-z\ ]*[A-Z]{1,2}[A-Za-z0-9\.\ ]*)$/', $classmark)) {
-            throw new \InvalidArgumentException('Invalid classmark provided for parse.');
+    
+        // Validate the classmark
+        if($classmark == null || $classmark == '' || empty($classmark)) {
+            throw new \InvalidArgumentException('Invalid classmark provided for parse - No value provided;');
         }
-
+    
         // Setup our variables.
-        $author = '';
-        $prefix = '';
-        $subject = '';
-        $subdivision = '';
-        $classmark = trim($classmark);
-
-        // Strip any lower-case characters from the start of the string.
-        if (preg_match('/^([a-z]*)/', $classmark, $matches)) {
-            $prefix = $matches[1];
-            $classmark = trim(substr($classmark, strlen($prefix)));
+        $subject = null;
+        $subdivision = null;
+    
+        $classmark = strtoupper($classmark); // Uppercase our $classmark string
+    
+        // Does the classmark start with a number?
+        if (is_numeric(substr($classmark, 0, 1))) {
+            throw new \InvalidArgumentException('Invalid classmark provided for parse - Value begins with a number (' . $classmark . ');');
         }
-
-        // Strip any 3 lower case characters from the end of the string
-        // if separated by a space.
-        if (preg_match('/\ ([a-z]{3})$/', $classmark, $matches)) {
-            $author = $matches[1];
-            $classmark = trim(substr($classmark, 0, strpos($classmark, $author)));
+    
+        // SUBJECTS
+        // ----------------------------------------------------------------------------------
+    
+        $subject = substr($classmark, 0, $number_index);    
+        $subdivision = trim(substr($classmark, strlen($subject)));
+    
+        // Find and remove any decimal or space on the subject value
+        if (preg_match('/(\.|\s)/', $subject, $matches, PREG_OFFSET_CAPTURE)) {
+            $subject = str_replace([' ','.'], '', $subject);
         }
-
-        // Strip off the first set of uppercase alpha characters.
-        if (preg_match('/(^[A-Z]{1,4})/', $classmark, $matches)) {
-            $subject = $matches[1];
-            $classmark = trim(substr($classmark, strlen($subject)));
+    
+        // Check if first letter is a valid classmark
+        // If character is I, O, W, or X = Return false (Invalid classmark)
+        if (preg_match('/^[IOWX]/', $subject)) {
+            throw new \InvalidArgumentException('Invalid classmark provided for parse - First subject letter ' . $subject[0] . ' is invalid (' . $classmark . ');');
         }
+    
+        // SUBDIVISIONS
+        // ----------------------------------------------------------------------------------
+    
+        // Search for first single space in the remaining string
+        preg_match('/\s/', $subdivision, $matches, PREG_OFFSET_CAPTURE);
+        if (!empty($matches)) {
+            // Remove all characters from that index to the end of the string
+            $index = $matches[0][1];
+            $subdivision = substr($subdivision, 0, $index);
+        }
+    
+        // Check if first character is a space or decimal
+        if (preg_match('/^(\.|\s)/', $subdivision)) {
+            $subdivision = substr($subdivision, 1); // Remove the character
+        }
+    
+        if (empty($subject) || empty($subdivision)) {
+            throw new \InvalidArgumentException('Invalid classmark provided for parse - Parsing returned an empty value for subject and/or sub-subject (' . $classmark . ');');
+        }
+        
+        return new static($subject, $subdivision);
 
-        // Subdivision is whatever is left.
-        $subdivision = $classmark;
-
-        return new static($subject, $subdivision, $author, $prefix);
-    }
-
-    /**
-     * Return the author.
-     */
-    public function get_author()
-    {
-        return $this->author;
-    }
-
-    /**
-     * Return the prefix.
-     */
-    public function get_prefix()
-    {
-        return $this->prefix;
     }
 
     /**
@@ -166,6 +155,6 @@ class Classmark
      */
     public function __toString()
     {
-        return trim("{$this->prefix}{$this->subject}{$this->subdivision}{$this->author}");
+        return trim("{$this->subject}{$this->subdivision}");
     }
 }
